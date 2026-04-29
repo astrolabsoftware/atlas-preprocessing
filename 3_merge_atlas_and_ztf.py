@@ -49,6 +49,7 @@ def main():
     df_ztf = spark.read.format("parquet").load(
         "sso_ztf_lc_aggregated_202512_for_atlas.parquet"
     )
+
     df_ztf = df_ztf.withColumnRenamed("cjd", "cjd_obs")
     df_ztf = df_ztf.drop("ssnamenr")
 
@@ -56,7 +57,9 @@ def main():
     df_ztf = df_ztf.withColumn("name", F.regexp_replace("name", " ", "_"))
 
     # Add dx, dy for ZTF
-    df_ztf = df_ztf.withColumn("cdxdy", spherical_offsets_to("cra", "RA", "cdec", "DEC"))
+    df_ztf = df_ztf.withColumn(
+        "cdxdy", spherical_offsets_to("cra", "RA", "cdec", "DEC")
+    )
     df_ztf = df_ztf.withColumn("cdx", df_ztf["cdxdy"].getItem("cdx"))
     df_ztf = df_ztf.withColumn("cdy", df_ztf["cdxdy"].getItem("cdy"))
     df_ztf = df_ztf.drop("cdxdy")

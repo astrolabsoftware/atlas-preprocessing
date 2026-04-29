@@ -34,6 +34,8 @@ def main():
     df_ztf = spark.read.format("parquet").load(
         "sso_ztf_lc_aggregated_202512_for_atlas.parquet"
     )
+    # remove objects without ephemerides
+    df_ztf = df_ztf.filter(F.col("RA").isNotNull())
     df_ztf = df_ztf.select("name")
 
     for code in MAPPING_CODES:
