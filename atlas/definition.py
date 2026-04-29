@@ -37,7 +37,7 @@ CAT_V3_SCHEMA = [
     "tol",
 ]
 
-cols_of_interest = [
+COLS_OF_INTEREST = [
     "MJD_obs",
     "MJD_lc",
     "filt",
