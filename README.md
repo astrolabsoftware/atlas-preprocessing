@@ -22,15 +22,15 @@ Then we need to resolve packed designation from ATLAS to SSO name using rocks:
 
 This will create a file `atlas-sscat.v3.0_with_names.parquet` on HDFS (about 16GB). Among all entries, 258,545,151 have a non-null name (99.9%).
 
-## Split by stations
+## Split by stations and restrict to objects in ZTF
 
-Then we split data per station, and crossmatch with ZTF names:
+Then we split data per station, and crossmatch with ZTF names (ZTF data is not yet added):
 
 ```bash
 ./run.sh -s 2_group_by_stations_with_ztf.py -c 64
 ```
 
-There are 172,941 objects in the ZTF dataset, and the number of objects per station:
+This will produce 4 files, `atlas-sscat.v3.0_x_ztf.202512_{}.parquet`. There are 172,941 objects in the ZTF dataset, and the number of ATLAS x ZTF objects per station:
 
 ```python
 # Number of objects per station
@@ -53,3 +53,34 @@ len(np.unique(container))
 ```
 
 This is nearly 100% of ZTF objects with ATLAS counterpart.
+
+## ATLAS ephemerides
+
+Now you can run ATLAS ephemerides using
+
+```bash
+cd "${FINK_HOME}"/scheduler/atlas/
+nohup ./launch_ssoft.sh &
+```
+
+Do not hesitate to limit the number of objects for test purposes.
+
+## Test data
+
+Do not hesitate to limit the number of objects in the previous step for test purposes. Notably to test utilities in fink-utils.
+
+```bash
+# from the cluster
+hdfs dfs -get atlas-sscat.v3.0_x_ztf.202512_M22_with_ephems.parquet/part-00128-9635ed35-c0d9-4e55-bc5e-09c5a8e4abaa-c000.snappy.parquet
+
+# scp
+scp username@ip:/path/*.parquet fink_utils/test_data/atlas-sscat.v3.0_x_ztf.202512_M22_with_ephems.parquet
+```
+
+## Join ATLAS and ZTF ephemerides
+
+Now this is time to conclude by merging all ATLAS stations and adding ZTF observations to it:
+
+```bash
+./run.sh -s 3_merge_atlas_and_ztf.py -c 64
+```
