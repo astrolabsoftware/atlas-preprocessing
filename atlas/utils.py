@@ -12,14 +12,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import astropy.units as u
 import numpy as np
 import pandas as pd
 import rocks
+from astropy.coordinates import SkyCoord
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import pandas_udf
-from pyspark.sql.types import ArrayType, DoubleType, IntegerType, StringType
+from pyspark.sql.types import ArrayType, DoubleType, IntegerType, MapType, StringType
 
-from atlas.definition import MAPPING_BANDS, MAPPING_CODES
+from atlas.definition import MAPPING_BANDS, MAPPING_CODES, ZTF_PIX_SIZE_ARCSEC
 
 
 def init_spark(name):
@@ -46,6 +48,30 @@ def translate(band: pd.Series) -> pd.Series:
 def get_iau_codes(obs: pd.Series) -> pd.Series:
     """Map codes to station ID"""
     return obs.apply(lambda row: [MAPPING_CODES[i[0:2]] for i in row])
+
+
+@pandas_udf(MapType(StringType(), ArrayType(DoubleType())))
+def spherical_offsets_to(
+    ras: pd.Series, raephems: pd.Series, decs: pd.Series, decephems: pd.Series
+) -> pd.Series:
+    """Compute the offsets in pixels between position and ephemerides"""
+    container = []
+    # Loop over rows
+    for ra, raephem, dec, decephem in zip(
+        ras.to_numpy(), raephems.to_numpy(), decs.to_numpy(), decephems.to_numpy()
+    ):
+        # ra, dec, raephem, decephem are numpy arrays
+        position = SkyCoord(ra, dec, frame="icrs")
+        ephemeride = SkyCoord(raephem, decephem, frame="icrs")
+
+        dra, ddec = position.spherical_offsets_to(ephemeride)
+
+        dx = dra.to(u.arcsec) * ZTF_PIX_SIZE_ARCSEC
+        dy = ddec.to(u.arcsec) * ZTF_PIX_SIZE_ARCSEC
+
+        container.append({"dx": dx, "dy": dy})
+
+    return pd.Series(container)
 
 
 def rockify(ssoid: pd.Series) -> pd.Series:

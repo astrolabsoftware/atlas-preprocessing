@@ -17,7 +17,8 @@ import logging
 import pyspark.sql.functions as F
 from fink_utils.sso.ssoft import join_aggregated_sso_data
 
-from atlas.utils import MAPPING_CODES, init_spark
+from atlas.definition import MAPPING_CODES
+from atlas.utils import init_spark, spherical_offsets_to
 
 _LOG = logging.getLogger(__name__)
 
@@ -50,8 +51,15 @@ def main():
     )
     df_ztf = df_ztf.withColumnRenamed("cjd", "cjd_obs")
     df_ztf = df_ztf.drop("ssnamenr")
+
     # to match ATLAS/quaero convention
     df_ztf = df_ztf.withColumn("name", F.regexp_replace("name", " ", "_"))
+
+    # Add dx, dy for ZTF
+    df_ztf = df_ztf.withColumn("dxdy", spherical_offsets_to("cra", "RA", "cdec", "DEC"))
+    df_ztf = df_ztf.withColumn("dx", df_ztf["dxdy"].getItem("dx"))
+    df_ztf = df_ztf.withColumn("dy", df_ztf["dxdy"].getItem("dy"))
+    df_ztf = df_ztf.drop("dxdy")
 
     assert sorted(df_ztf.columns) == sorted(df_atlas_join.columns), (
         sorted(df_ztf.columns),

@@ -60,3 +60,5 @@ MAPPING_CODES = {
 }
 
 MAPPING_BANDS = {"o": 3, "c": 4}
+
+ZTF_PIX_SIZE_ARCSEC = 1.0
