@@ -61,8 +61,8 @@ def spherical_offsets_to(
         ras.to_numpy(), raephems.to_numpy(), decs.to_numpy(), decephems.to_numpy()
     ):
         # ra, dec, raephem, decephem are numpy arrays
-        position = SkyCoord(ra, dec, frame="icrs")
-        ephemeride = SkyCoord(raephem, decephem, frame="icrs")
+        position = SkyCoord(ra=ra, dec=dec, unit='deg')
+        ephemeride = SkyCoord(ra=raephem, dec=decephem, unit='deg')
 
         dra, ddec = position.spherical_offsets_to(ephemeride)
 
