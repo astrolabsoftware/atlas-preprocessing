@@ -84,3 +84,80 @@ Now this is time to conclude by merging all ATLAS stations and adding ZTF observ
 ```bash
 ./run.sh -s 3_merge_atlas_and_ztf.py -c 64
 ```
+
+This will create a file `atlas-sscat.v3.0_x_ztf.202512_full_join.parquet` with both ATLAS and ZTF.
+
+## Checks
+
+Number of observations in total, and per station:
+
+```python
+df = spark.read.format("parquet").load("atlas-sscat.v3.0_x_ztf.202512_full_join.parquet")
+df.withColumn("size", F.size("cfid")).select("size").groupBy().sum().show()
++---------+
+|sum(size)|
++---------+
+| 23908166|
++---------+
+
+for iauobs in ['I41', 'T05', 'T08', 'M22', 'W68']:
+   ...:     flt = lambda x: x == iauobs
+   ...:     df.withColumn("arr", F.filter(F.col("ciauobs"), flt)).withColumn("size", F.size("arr")).select("size").groupBy().sum().show()
+   ...:
+
++---------+
+|sum(size)|
++---------+
+| 23744621|
++---------+
+
++---------+
+|sum(size)|
++---------+
+|    59152|
++---------+
+
++---------+
+|sum(size)|
++---------+
+|    59982|
++---------+
+
++---------+
+|sum(size)|
++---------+
+|    24820|
++---------+
+
++---------+
+|sum(size)|
++---------+
+|    19591|
++---------+
+```
+
+Here is the repartition of the number of objects per number of stations per object:
+
+```python
+df = spark.read.format("parquet").load("atlas-sscat.v3.0_x_ztf.202512_full_join.parquet")
+df.withColumn("nstations", F.size(F.array_distinct("ciauobs")))\
+    .groupBy("nstations").count()\
+    .orderBy("nstations")\
+    .show()
+
++---------+------+
+|nstations| count|
++---------+------+
+|        1| 69071|
+|        2|   214|
+|        3|   563|
+|        4|   211|
+|        5|103028|
++---------+------+
+```
+
+69,071 objects have been seen by only one station (that's the ZTF-only objects), and then most of the objects have been seen by all 5 stations (ZTF + 4 ATLAS sites).
+
+
+Finally we launched the SSOFT with the SOCCA model on it!
+
