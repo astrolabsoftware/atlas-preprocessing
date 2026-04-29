@@ -51,6 +51,10 @@ def main():
     )
     # remove objects without ephemerides
     df_ztf = df_ztf.filter(F.col("RA").isNotNull())
+
+    # remove objects zith suspect ephemerides
+    df_ztf = df_ztf.withColumn('bad', F.when(F.size('cra') != F.size('RA'), F.lit(1)).otherwise(F.lit(0))).filter('bad = 1').drop('bad')
+
     df_ztf = df_ztf.withColumnRenamed("cjd", "cjd_obs")
     df_ztf = df_ztf.drop("ssnamenr")
 
