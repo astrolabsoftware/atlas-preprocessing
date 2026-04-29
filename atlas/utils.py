@@ -69,7 +69,7 @@ def spherical_offsets_to(
         dx = dra.to(u.arcsec) * ZTF_PIX_SIZE_ARCSEC
         dy = ddec.to(u.arcsec) * ZTF_PIX_SIZE_ARCSEC
 
-        container.append({"dx": dx, "dy": dy})
+        container.append({"cdx": dx, "cdy": dy})
 
     return pd.Series(container)
 

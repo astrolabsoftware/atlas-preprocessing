@@ -56,10 +56,10 @@ def main():
     df_ztf = df_ztf.withColumn("name", F.regexp_replace("name", " ", "_"))
 
     # Add dx, dy for ZTF
-    df_ztf = df_ztf.withColumn("dxdy", spherical_offsets_to("cra", "RA", "cdec", "DEC"))
-    df_ztf = df_ztf.withColumn("dx", df_ztf["dxdy"].getItem("dx"))
-    df_ztf = df_ztf.withColumn("dy", df_ztf["dxdy"].getItem("dy"))
-    df_ztf = df_ztf.drop("dxdy")
+    df_ztf = df_ztf.withColumn("cdxdy", spherical_offsets_to("cra", "RA", "cdec", "DEC"))
+    df_ztf = df_ztf.withColumn("cdx", df_ztf["cdxdy"].getItem("cdx"))
+    df_ztf = df_ztf.withColumn("cdy", df_ztf["cdxdy"].getItem("cdy"))
+    df_ztf = df_ztf.drop("cdxdy")
 
     assert sorted(df_ztf.columns) == sorted(df_atlas_join.columns), (
         sorted(df_ztf.columns),
