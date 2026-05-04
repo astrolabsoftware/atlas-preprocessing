@@ -97,46 +97,44 @@ df.withColumn("size", F.size("cfid")).select("size").groupBy().sum().show()
 +---------+
 |sum(size)|
 +---------+
-| 23908166|
+|230184859|
 +---------+
 
 for iauobs in ['I41', 'T05', 'T08', 'M22', 'W68']:
-   ...:     flt = lambda x: x == iauobs
-   ...:     df.withColumn("arr", F.filter(F.col("ciauobs"), flt)).withColumn("size", F.size("arr")).select("size").groupBy().sum().show()
-   ...:
-
-+---------+
+    flt = lambda x: x == iauobs
+    df.withColumn("arr", F.filter(F.col("ciauobs"), flt)).withColumn("size", F.size("arr")).select("size").groupBy().sum().show()
++---------+                                                                     
 |sum(size)|
 +---------+
 | 23744621|
 +---------+
 
-+---------+
++---------+                                                                     
 |sum(size)|
 +---------+
-|    59152|
+| 70531249|
 +---------+
 
-+---------+
++---------+                                                                     
 |sum(size)|
 +---------+
-|    59982|
+| 77262670|
 +---------+
 
-+---------+
++---------+                                                                     
 |sum(size)|
 +---------+
-|    24820|
+| 32457914|
 +---------+
 
-+---------+
++---------+                                                                     
 |sum(size)|
 +---------+
-|    19591|
+| 26188405|
 +---------+
 ```
 
-Here is the repartition of the number of objects per number of stations per object:
+This is largely dominated by ATLAS in terms of number of observations. Here is the repartition of the number of objects per number of stations per object:
 
 ```python
 df = spark.read.format("parquet").load("atlas-sscat.v3.0_x_ztf.202512_full_join.parquet")
@@ -148,15 +146,14 @@ df.withColumn("nstations", F.size(F.array_distinct("ciauobs")))\
 +---------+------+
 |nstations| count|
 +---------+------+
-|        1| 69071|
-|        2|   214|
-|        3|   563|
-|        4|   211|
-|        5|103028|
+|        1|     1|
+|        3|   455|
+|        4|   626|
+|        5|171484|
 +---------+------+
 ```
 
-69,071 objects have been seen by only one station (that's the ZTF-only objects), and then most of the objects have been seen by all 5 stations (ZTF + 4 ATLAS sites).
+1 objects have been seen by only one station (that's a ZTF-only object), and then most of the objects have been seen by all 5 stations (ZTF + 4 ATLAS sites).
 
 
 Finally we launched the SSOFT with the SOCCA model on it!
