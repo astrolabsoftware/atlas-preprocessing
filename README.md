@@ -62,6 +62,17 @@ You need to prepare ZTF data:
 ./run.sh -s 3_prepare_ztf.py -c 32
 ```
 
+At this point you should have:
+
+```bash
+hdfs dfs -du -h | grep atlas-sscat.v3.0_x_ztf.202512_
+1.2 G     1.2 G     atlas-sscat.v3.0_x_ztf.202512_I41.parquet
+1010.3 M  1010.3 M  atlas-sscat.v3.0_x_ztf.202512_M22.parquet
+2.2 G     2.2 G     atlas-sscat.v3.0_x_ztf.202512_T05.parquet
+2.4 G     2.4 G     atlas-sscat.v3.0_x_ztf.202512_T08.parquet
+821.0 M   821.0 M   atlas-sscat.v3.0_x_ztf.202512_W68.parquet
+```
+
 ## ATLAS ephemerides
 
 Now you can run ATLAS ephemerides using
@@ -71,7 +82,17 @@ cd "${FINK_HOME}"/scheduler/atlas/
 nohup ./launch_ssoft.sh &
 ```
 
-Do not hesitate to limit the number of objects for test purposes.
+Do not hesitate to limit the number of objects for test purposes. You should have:
+
+```bash
+hdfs dfs -du -h | grep atlas-sscat.v3.0_x_ztf.202512_*_ephems.parquet
+2.5 G    2.5 G    old_atlas/atlas-sscat.v3.0_x_ztf.202512_I41_with_ephems.parquet
+2.5 G    2.5 G    old_atlas/atlas-sscat.v3.0_x_ztf.202512_M22_with_ephems.parquet
+5.4 G    5.4 G    old_atlas/atlas-sscat.v3.0_x_ztf.202512_T05_with_ephems.parquet
+5.9 G    5.9 G    old_atlas/atlas-sscat.v3.0_x_ztf.202512_T08_with_ephems.parquet
+2.0 G    2.0 G    old_atlas/atlas-sscat.v3.0_x_ztf.202512_W68_with_ephems.parquet
+
+```
 
 ## Test data
 
