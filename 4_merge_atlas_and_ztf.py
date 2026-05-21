@@ -33,49 +33,15 @@ def main():
         for code in MAPPING_CODES.values()
     ]
 
+    files += ['atlas-sscat.v3.0_x_ztf.202512_I41_with_ephems.parquet"']
+
     for index, file in enumerate(files):
         if index == 0:
             df_prev = spark.read.format("parquet").load(file)
             continue
         df_new = spark.read.format("parquet").load(file)
-        df_atlas_join = join_aggregated_sso_data(df_new, df_prev, on="name")
-        df_prev = df_atlas_join
-
-    # FIXME: add it to ZTF rather than dropping it from ATLAS
-    df_atlas_join = df_atlas_join.drop("obscode")
-    df_atlas_join = df_atlas_join.drop("ctol", "cSOE", "cjd_lc")
-
-    # ZTF
-    df_ztf = spark.read.format("parquet").load(
-        "sso_ztf_lc_aggregated_202512_for_atlas.parquet"
-    )
-    # remove objects without ephemerides
-    df_ztf = df_ztf.filter(F.col("RA").isNotNull())
-
-    # remove objects zith suspect ephemerides
-    df_ztf = df_ztf.withColumn('bad', F.when(F.size('cra') != F.size('RA'), F.lit(1)).otherwise(F.lit(0))).filter('bad = 0').drop('bad')
-
-    df_ztf = df_ztf.withColumnRenamed("cjd", "cjd_obs")
-    df_ztf = df_ztf.drop("ssnamenr")
-
-    # to match ATLAS/quaero convention
-    df_ztf = df_ztf.withColumn("name", F.regexp_replace("name", " ", "_"))
-
-    # Add dx, dy for ZTF
-    df_ztf = df_ztf.withColumn(
-        "cdxdy", spherical_offsets_to("cra", "RA", "cdec", "DEC")
-    )
-    df_ztf = df_ztf.withColumn("cdx", df_ztf["cdxdy"].getItem("cdx"))
-    df_ztf = df_ztf.withColumn("cdy", df_ztf["cdxdy"].getItem("cdy"))
-    df_ztf = df_ztf.drop("cdxdy")
-
-    assert sorted(df_ztf.columns) == sorted(df_atlas_join.columns), (
-        sorted(df_ztf.columns),
-        sorted(df_atlas_join.columns),
-    )
-
-    # Join
-    df_join = join_aggregated_sso_data(df_ztf, df_atlas_join, on="name")
+        df_join = join_aggregated_sso_data(df_new, df_prev, on="name")
+        df_prev = df_join
 
     df_join.write.parquet("atlas-sscat.v3.0_x_ztf.202512_full_join.parquet")
 
