@@ -54,6 +54,14 @@ len(np.unique(container))
 
 This is nearly 100% of ZTF objects with ATLAS counterpart.
 
+## Prepare ZTF file
+
+You need to prepare ZTF data:
+
+```bash
+./run.sh -s 3_prepare_ztf.py -c 32
+```
+
 ## ATLAS ephemerides
 
 Now you can run ATLAS ephemerides using
@@ -82,7 +90,7 @@ scp username@ip:/path/*.parquet fink_utils/test_data/atlas-sscat.v3.0_x_ztf.2025
 Now this is time to conclude by merging all ATLAS stations and adding ZTF observations to it:
 
 ```bash
-./run.sh -s 3_merge_atlas_and_ztf.py -c 64
+./run.sh -s 4_merge_atlas_and_ztf.py -c 64
 ```
 
 This will create a file `atlas-sscat.v3.0_x_ztf.202512_full_join.parquet` with both ATLAS and ZTF.
